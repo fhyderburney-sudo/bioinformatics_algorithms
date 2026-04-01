@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+
+# Large bioinformatics data
+*.fastq
+*.fq
+*.bam
+*.sam
+*.fasta
+*.fa
+*.tsv
+*.csv
+
+# ICA folders
+GSE*/
+runs/
+*.tar.gz
+
+# PyCharm
+.idea/
+
+# Environments
+venv/
+.venv/
+.env/
+
+# OS
+.DS_Store
