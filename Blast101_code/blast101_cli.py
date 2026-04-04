@@ -87,5 +87,42 @@ def main():
     parser.add_argument("--query", help="FASTA query file to search")
 
     args = parser.parse_args()
-    programme_settings.read(args.database)
-    programme_settings.read(args.database)
+
+    #loads settings first to read valid residues and deafults
+    programme_settings.read()
+
+    if args.mode == "blast":
+        print_run_summary("blast", query_seq=None, database=None)
+        run_tests()
+        return
+
+    if args.query_seq is None:
+        parser.error("No query sequence provided")
+
+    if args.database is None:
+        parser.error("No database path provided")
+
+    valid_residues = programme_settings.settings["valid_residues"]
+
+    try:
+        query_seq = validate_database_file(args.query_seq, valid_residues)
+        database = validate_query_sequence(args.query_seq, valid_residues)
+    except: ValueError as exc:
+        print(f'Input error: {exc}')
+        sys.exit(1)
+
+    #overriding selected settings in memory only
+
+    programme_settings.settings["DEFAULT"]["query_sequence"] = query_seq
+    programme_settings.settings["DEFAULT"]["database"] = database
+
+    print_run_summary(mode=args.mode, query_seq=query_seq, database=database)
+
+    if args.mode == "blast":
+        blast_101_search.blast101_run()
+    elif args.mode == "sw":
+        smith_waterman_search.smith_waterman_run()
+
+if __name__ == "__main__":
+    main()
+
