@@ -1,6 +1,7 @@
 import os
 import tempfile
 import unittest
+import random
 
 import blast101_cli
 import process_fasta_file as pff
@@ -132,6 +133,21 @@ class TestSmithWaterman(unittest.TestCase):
         query = "PWNAAPLHNFGEDFLQPYVQLQQNFSASDLEVNLEATRESHAHFSTPQALELFLNYSVTP"
         score = SW.perform_smith_waterman(query, query, False, False)
         self.assertEqual(score, 320)
+
+    def test_random_regression_sw(self):
+        random.seed(42)
+        alphabet = "ACTG"
+
+        for i in range(25):
+            seq1 = "".join(random.choice(alphabet) for i in range(random.randint(10, 20)))
+            seq2 = "".join(random.choice(alphabet) for i in range(random.randint(10, 20)))
+
+            score1 = SW.perform_smith_waterman(seq1, seq2, False, False)
+            score2 = SW.perform_smith_waterman(seq1, seq2, False, False)
+
+            self.assertGreaterEqual(score1, 0)
+            self.assertGreaterEqual(score2, 0)
+            self.assertEqual(score1, score2)
 
 
 class TestBitAndEvalues(unittest.TestCase):
