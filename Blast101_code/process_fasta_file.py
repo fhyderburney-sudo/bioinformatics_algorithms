@@ -5,68 +5,71 @@
 #  Find the SW optimum sequence                            #
 ############################################################
 
-
 from operator import itemgetter
 import time
 
-global bestscore, bestheader, bestbody, aligntime, res
 bestscore = 0
 bestheader = ""
 bestbody = ""
 aligntime = 0
-
-global aligner_timer_secs
-
-#OK add tuple for storing scores
 res = []
 
-#add two seqs
+# add two seqs
 def add_score(nsssc, max_scores):
     global res
 
     res.append(nsssc)
-    res.sort(key=itemgetter(2),reverse = False) #ascending scores
+    res.sort(key=itemgetter(2), reverse=False)  # ascending scores
     if len(res) > max_scores:
         res.pop(0)
 
 
-def process_fasta_file(fastafile, processfunction, max_scores,ats =None):
+def process_fasta_file(fastafile, processfunction, max_scores, ats=None):
+    global bestscore
+    global bestheader
+    global bestbody
+    global aligntime
+    global res
+
+    # reset globals for each run
+    bestscore = 0
+    bestheader = ""
+    bestbody = ""
+    aligntime = 0
+    res = []
 
     f1 = open(fastafile, 'r')
     f1lines = f1.readlines()
     read_body = False
     count = 1
     myline = ""
-    fileindex =0
+    fileindex = 0
 
-    global bestscore
-    global bestheader
-    global bestbody
-    global  aligntime
-
-    current_header=""
+    current_header = ""
 
     for line in f1lines:
         line = line.rstrip()
         if line.startswith('>'):
             count = count + 1
-            if count %1000==0:
-                print("#",count)
+            if count % 1000 == 0:
+                print("#", count)
 
             if read_body == True:
 
                 # we are ending the processing of a seq
-                t3=time.time()
-                score = processfunction( myline)
-                t4 =time.time()
+                t3 = time.time()
+                score = processfunction(myline)
+                t4 = time.time()
                 if ats is not None:
                     # store the score
                     ats["Fastatime"] += t4 - t3
 
                 if score > bestscore:
-                    bs = (current_header, myline, score,fileindex)
+                    bestscore = score
+                    bs = (current_header, myline, score, fileindex)
                     add_score(bs, max_scores)
-                    fileindex+=1
+
+                fileindex += 1
                 read_body = False
 
         if read_body == False:
@@ -78,22 +81,20 @@ def process_fasta_file(fastafile, processfunction, max_scores,ats =None):
                 myline = myline + line
     f1.close()
 
-    if  read_body == True:
-        t3 =time.time()
+    if read_body == True:
+        t3 = time.time()
         score = processfunction(myline)
         t4 = time.time()
         if ats is not None:
             # store the score
             ats["Fastatime"] += t4 - t3
 
-
-
         if score > bestscore:
             bestscore = score
-            bs = (current_header, myline, score,fileindex)
+            bs = (current_header, myline, score, fileindex)
             add_score(bs, max_scores)
-            fileindex+=1
 
-        print("Processing completed: ",count)
+        fileindex += 1
+        print("Processing completed: ", count)
 
     return res

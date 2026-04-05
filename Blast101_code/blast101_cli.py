@@ -23,19 +23,31 @@ import programme_settings
 import blast_101_search
 import smith_waterman_search
 
+#Validate query sequence
 def validate_query_sequence(seq: str, valid_residues: str) -> str:
+    if seq is None:
+        raise ValueError("No query sequence provided")
+
+    seq = seq.strip().upper()
+
     if len(seq) == 0:
         raise ValueError("Sequence cannot be empty")
 
     valid_set = set(valid_residues.upper())
-    invalid_chars = sorted(set(seq)- valid_set)
+    invalid_chars = sorted(set(seq) - valid_set)
+
     if invalid_chars:
-        raise ValueError("Sequence contains invalid characters")
+        raise ValueError(
+            f"Sequence contains invalid character(s): {', '.join(invalid_chars)}"
+        )
 
-    if seq is None:
-        raise ValueError("Sequence cannot be empty")
-    seq = seq.strip().upper()
+    # reject likely DNA input
+    dna_set = set("ACGT")
+    if set(seq).issubset(dna_set):
+        raise ValueError("Sequence appears to be DNA, not protein")
 
+    return seq
+#Validate database file
 def validate_database_file(path: str) -> str:
     if path is None:
         raise ValueError("No database path provided")
@@ -58,21 +70,20 @@ def validate_database_file(path: str) -> str:
     if not nonempty.startswith(">"):
         raise ValueError("Database file does not appear to be in FASTA format")
     return path
-
-def print_run_summary(mode: str, query_seq: str | None, database_path: str) -> None:
+#Print state of inputs before running
+def print_run_summary(mode: str, query_seq: str | None, database: str | None) -> None:
     print(f"=========================================================")
     print("BLAST101 Command Line Interface")
     print("==========================================================")
     print(f"Mode: {mode}")
     if query_seq is not None:
         print(f"Query: {query_seq}")
-    if database_path is not None:
-        print(f"Database path: {database_path}")
+    if database is not None:
+        print(f"Database path: {database}")
     print("Using remaining parameters from settings.ini")
     print("=========================================================")
-
+#Run tests
 def run_tests() -> None:
-    loader = unittest.TestLoader()
     suite = unittest.TestSuite()
     runner = unittest.TextTestRunner()
     result = runner.run(suite)
@@ -81,38 +92,37 @@ def run_tests() -> None:
 
 def main():
     parser = argparse.ArgumentParser(description="BLAST101 Command Line Interface")
-    parser.add_argument("--mode", required=True, choices="blast", "sw", "test",
-                        help="BLAST101 Command Line Interface")
+    parser.add_argument("--mode", required=True, choices=["blast", "sw", "test"],
+                        help="Choose between blast, sw or test")
     parser.add_argument("--database", help="FASTA database file to search")
-    parser.add_argument("--query", help="FASTA query file to search")
+    parser.add_argument("--query-seq", help="FASTA query file to search")
 
     args = parser.parse_args()
 
-    #loads settings first to read valid residues and deafults
+    #loads settings first to read valid residues and defaults
     programme_settings.read()
 
-    if args.mode == "blast":
-        print_run_summary("blast", query_seq=None, database=None)
+    if args.mode == "test":
+        print_run_summary("test", query_seq=None, database=None)
         run_tests()
         return
 
     if args.query_seq is None:
-        parser.error("No query sequence provided")
+        parser.error("--query-seq is required for blast and sw modes")
 
     if args.database is None:
-        parser.error("No database path provided")
+        parser.error("--database is required for blast and sw modes")
 
-    valid_residues = programme_settings.settings["valid_residues"]
+    valid_residues = programme_settings.settings["BLAST"]["valid_residues"]
 
     try:
-        query_seq = validate_database_file(args.query_seq, valid_residues)
-        database = validate_query_sequence(args.query_seq, valid_residues)
-    except: ValueError as exc:
+        query_seq = validate_query_sequence(args.query_seq, valid_residues)
+        database = validate_database_file(args.database)
+    except ValueError as exc:
         print(f'Input error: {exc}')
         sys.exit(1)
 
     #overriding selected settings in memory only
-
     programme_settings.settings["DEFAULT"]["query_sequence"] = query_seq
     programme_settings.settings["DEFAULT"]["database"] = database
 

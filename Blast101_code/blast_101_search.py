@@ -21,11 +21,13 @@ import os
 #These are used for timing of various events
 aligner_timer_secs ={}
 programme_settings.read()
+aligntime = 0
 
 #moved runtime variable setup into a function so they are not just created once at import time
 def load_runtime_settings():
     global ddist, max_extension_length, qsequence, query_sequence
     global max_scores, max_alignments, word_size, lib_seq_length, lib_seqs
+    global aligntime
 
     # matrix for blosum default = blosum62
     ddist = bl.BLOSUM(int(programme_settings.settings["DEFAULT"]["blosum"]))
@@ -293,8 +295,8 @@ def print_final_results(res):
         print(" Name: ", val[0], end ="")
         print(" Score: ", val[2])
         print("SWScore: ",val[4], end ="")
-        print(" Bit Score: ",cbe.get_bit_score_s(i[4], k,scale),end ="")
-        print(" Expect: " ,cbe.get_expect_s(i[4],k,scale))
+        print(" Bit Score: ",cbe.get_bit_score_s(val[4], k,scale),end ="")
+        print(" Expect: " ,cbe.get_expect_s(val[4],k,scale))
         #results_count = results_count +1
         SW.perform_smith_waterman(qsequence,val[1].upper(),False,True)
         loop+=1
