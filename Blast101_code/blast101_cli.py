@@ -22,6 +22,7 @@ import unittest
 import programme_settings
 import blast_101_search
 import smith_waterman_search
+import test_blast101
 
 #Validate query sequence
 def validate_query_sequence(seq: str, valid_residues: str) -> str:
@@ -77,14 +78,22 @@ def print_run_summary(mode: str, query_seq: str | None, database: str | None) ->
     print("==========================================================")
     print(f"Mode: {mode}")
     if query_seq is not None:
-        print(f"Query: {query_seq}")
+        print(f"Query sequence: {query_seq}")
     if database is not None:
         print(f"Database path: {database}")
     print("Using remaining parameters from settings.ini")
     print("=========================================================")
+    if mode == "blast":
+        print("Running BLAST-like local search...")
+    elif mode == "sw":
+        print("Running Smith-Waterman local alignment search...")
+    elif mode == "test":
+        print("Running automated unit tests...")
+    print("=========================================================")
 #Run tests
 def run_tests() -> None:
-    suite = unittest.TestSuite()
+    loader = unittest.TestLoader()
+    suite = unittest.TestSuite(test_blast101)
     runner = unittest.TextTestRunner()
     result = runner.run(suite)
     if not(result.wasSuccessful()):
@@ -95,7 +104,7 @@ def main():
     parser.add_argument("--mode", required=True, choices=["blast", "sw", "test"],
                         help="Choose between blast, sw or test")
     parser.add_argument("--database", help="FASTA database file to search")
-    parser.add_argument("--query-seq", help="FASTA query file to search")
+    parser.add_argument("--query-seq", help="Protein query sequence as a raw amino acid string")
 
     args = parser.parse_args()
 
