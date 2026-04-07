@@ -92,11 +92,12 @@ def print_run_summary(mode: str, query_seq: str | None, database: str | None) ->
     print("=========================================================")
 #Run tests
 def run_tests() -> None:
+    import test_blast101
     loader = unittest.TestLoader()
-    suite = unittest.TestSuite(test_blast101)
+    suite = loader.loadTestsFromModule(test_blast101)
     runner = unittest.TextTestRunner()
     result = runner.run(suite)
-    if not(result.wasSuccessful()):
+    if not result.wasSuccessful():
         sys.exit(1)
 
 def main():
@@ -140,7 +141,7 @@ def main():
     if args.mode == "blast":
         blast_101_search.blast101_run()
     elif args.mode == "sw":
-        smith_waterman_search.smith_waterman_run()
+        smith_waterman_search.smith_waterman_run(read_settings=False)
 
 if __name__ == "__main__":
     main()

@@ -31,8 +31,9 @@ def processSW(myline_database):
     return res
 
 #just buildit
-def smith_waterman_run():
-    programme_settings.read()
+def smith_waterman_run(read_settings=True):
+    if read_settings:
+        programme_settings.read()
     load_runtime_settings()
 
     t0 = time.time()
@@ -61,11 +62,11 @@ def smith_waterman_run():
     lib_size = int(programme_settings.settings["DEFAULT"]["current_library_size"])
     K = float(programme_settings.settings["DEFAULT"]["k"])
     lam = float(programme_settings.settings["DEFAULT"]["lam"])
-    len = len(query_sequence)
+    seq_len = len(query_sequence)
 
     # write the raw data to a file
     # res ==i  is (current_header, myline, score,fileindex)
-    with open("logs\SWsearch.csv", 'w') as outputfile:
+    with open("logs/SWsearch.csv", 'w') as outputfile:
         outputfile.write("Name\tSWScore\tBitScore\tE-value\tSeqIndex\n")
 
         for i in res:

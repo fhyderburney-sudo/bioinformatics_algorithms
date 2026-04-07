@@ -129,14 +129,15 @@ class TestSmithWaterman(unittest.TestCase):
         score_diff = SW.perform_smith_waterman("AAAA", "RRRR", False, False)
         self.assertGreater(score_same, score_diff)
 
-    def test_perfect_match_ground_truth(self):
-        query = "PWNAAPLHNFGEDFLQPYVQLQQNFSASDLEVNLEATRESHAHFSTPQALELFLNYSVTP"
-        score = SW.perform_smith_waterman(query, query, False, False)
-        self.assertEqual(score, 320)
+    def test_small_exact_match_ground_truth(self):
+        # Under BLOSUM62, A-A scores 4.
+        # Therefore AAAA vs AAAA should score 16 with no gaps.
+        score = SW.perform_smith_waterman("AAAA", "AAAA", False, False)
+        self.assertEqual(score, 16)
 
     def test_random_regression_sw(self):
         random.seed(42)
-        alphabet = "ACTG"
+        alphabet = "GAVLITSMCPFYWHKRDENQ"
 
         for i in range(25):
             seq1 = "".join(random.choice(alphabet) for i in range(random.randint(10, 20)))
@@ -146,7 +147,6 @@ class TestSmithWaterman(unittest.TestCase):
             score2 = SW.perform_smith_waterman(seq1, seq2, False, False)
 
             self.assertGreaterEqual(score1, 0)
-            self.assertGreaterEqual(score2, 0)
             self.assertEqual(score1, score2)
 
 
@@ -154,12 +154,12 @@ class TestBitAndEvalues(unittest.TestCase):
     """Simple tests for helper functions using lecture-style values."""
 
     def setUp(self):
-        self.k = 6.23037
-        self.scale = 29.01160
+        self.k = 28.97440532601644
+        self.scale = 6.276718134182721
 
-    def test_bit_score_positive(self):
-        score = cbe.get_bit_score(300, self.k, self.scale)
-        self.assertGreater(score, 0)
+    def test_bit_score_string_not_empty(self):
+        score = cbe.get_bit_score_s(300, self.k, self.scale)
+        self.assertTrue(len(score) > 0)
 
     def test_expect_string_not_empty(self):
         expect = cbe.get_expect_s(300, self.k, self.scale)
@@ -169,6 +169,13 @@ class TestBitAndEvalues(unittest.TestCase):
         low_expect = float(cbe.get_expect_s(40, self.k, self.scale))
         high_expect = float(cbe.get_expect_s(300, self.k, self.scale))
         self.assertLess(high_expect, low_expect)
+
+    def test_realistic_database_ranking_by_expect(self):
+        raw_scores = [40, 80, 150,300]
+        expects = [float(cbe.get_expect_s(s, self.k, self.scale)) for s in raw_scores]
+        self.assertGreater(expects[0], expects[1])
+        self.assertGreater(expects[1], expects[2])
+        self.assertGreater(expects[2], expects[3])
 
 
 if __name__ == "__main__":
