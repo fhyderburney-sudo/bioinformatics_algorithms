@@ -1,3 +1,5 @@
+#Tests for BLAST101 Application
+# Code adapted from lecture material and class practical unless otherwise stated
 import os
 import tempfile
 import unittest
@@ -8,7 +10,7 @@ import process_fasta_file as pff
 import smith_waterman_p as SW
 import calc_bit_and_evalues as cbe
 
-
+# unittest framework adapted also from https://docs.python.org/3/library/unittest.html
 class TestCLIValidation(unittest.TestCase):
     """Tests for simple command-line input validation."""
 

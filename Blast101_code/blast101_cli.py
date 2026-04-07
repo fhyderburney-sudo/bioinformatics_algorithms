@@ -1,18 +1,5 @@
-
-# 1. run BLAST-like local search using existing blast_101_search.py
-# 2. run smith-waterman search using existing smith_waterman_search.py
-# 3. run tests using a test file you create
-# 4. print settings/ execution summary before running
-
-# this is the controller for existing code
-
-#PARSE ARGUMENTS
-#VALIDATE INPUTS
-#LOAD SETTINGS
-#OVERRIDE SELECTED SETTINGS IN MEMORY
-#CALL EITHER BLAST_101_SEARCH.BLAST101_RUN() OR SMITH_WATERMAN_SEARCH.. OR TESTS
-
-#python blast101_cli.py --mode blast --query-seq PWNAAPLHNFGEDFLQPYVQLQQNFSASDLEVNLEATRESHAHFSTPQALELFLNYSVTP --database uniprot_bit2.fasta
+#BLAST101 CLI
+# Code adapted from lecture material and class practical unless otherwise stated in comments
 
 import os
 import argparse
@@ -100,6 +87,7 @@ def run_tests() -> None:
     if not result.wasSuccessful():
         sys.exit(1)
 
+# argparse module for command line - https://docs.python.org/3/library/argparse.html
 def main():
     parser = argparse.ArgumentParser(description="BLAST101 Command Line Interface")
     parser.add_argument("--mode", required=True, choices=["blast", "sw", "test"],
